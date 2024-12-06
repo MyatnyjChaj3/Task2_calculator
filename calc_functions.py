@@ -58,38 +58,38 @@ class Calculator:
         self.current_value = self.memory
         return self.current_value
 
-    def remainder(a, b):
+    def remainder(self, value):
         try:
-            return a % b 
+            return Calculator.self % value 
         except ZeroDivisionError:
             print('На ноль делить нельзя!')
 
-    def sinus(a):
-        if a <= 360 or a >= 0:
-            a = a * math.pi() // 180
-            return math.sin(a)
+    def sin(self):
+        if Calculator.self <= 360 or Calculator.self >= 0:
+            Calculator.self = Calculator.self * math.pi() // 180
+            return math.sin(Calculator.self)
         else:
             print('Число должно находиться в диапазоне от 0 до 360')
     
-    def cosinus(a, b):
-        if a <= 360 or a >= 0:
-            a = a * math.pi() // 180
-            return math.cos(a)
+    def cos(self):
+        if Calculator.self <= 360 or Calculator.self >= 0:
+            Calculator.self = Calculator.self * math.pi() // 180
+            return math.cos(Calculator.self)
         else:
             print('Число должно находиться в диапазоне от 0 до 360')
    
-    def pow(a, b):
-        return a**b
+    def pow(self, value):
+        return Calculator.self**value
     
-    def sqrt(a):
-        if a == 0:
+    def sqrt(self):
+        if Calculator.self == 0:
             return 1
-        elif a > 0:
-            return a**(1/2) 
+        elif Calculator.self > 0:
+            return Calculator.self**(1/2) 
         else:
             print('Число должно быть больше нуля!')
     
-    def floor(a):
-        return math.floor(a)
+    def floor(self):
+        return math.floor(Calculator.self)
 
 
