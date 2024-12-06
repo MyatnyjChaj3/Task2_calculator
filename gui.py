@@ -1,8 +1,8 @@
 import sys
 
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QPushButton, QTabWidget,
-                             QVBoxLayout, QWidget)
+                             QLabel, QLineEdit, QMessageBox, QPushButton,
+                             QTabWidget, QVBoxLayout, QWidget)
 
 from calc_functions import Calculator
 
@@ -144,87 +144,77 @@ class StandardCalculator(QWidget):
             self.display.setText(current_text + btn)
 
     def on_function_click(self, btn=None):
-        sender = self.sender()
-        if sender.text() == "C":
-            self.display.setText("0")
-        elif sender.text() == "=":
-            try:
-                # Получаем выражение из дисплея
-                expression = self.display.text()
-                tokens = expression.split()  # Разделяем текст на элементы
-                
-                if len(tokens) == 3:
-                    # Бинарная операция (например, 5 + 3)
-                    a = float(tokens[0])
-                    op = tokens[1]
-                    b = float(tokens[2])
-                    
-                    # Выполняем операцию
-                    if op == "+":
-                        result = self.calculator.add(a, b)
-                    elif op == "-":
-                        result = self.calculator.subtract(a, b)
-                    elif op == "*":
-                        result = self.calculator.multiply(a, b)
-                    elif op == "/":
-                        result = self.calculator.divide(a, b)
-                    elif op == "mod":
-                        result = self.calculator.modulus(a, b)
-                    elif op == "^":
-                        result = self.calculator.power(a, b)
-                    else:
-                        result = "Ошибка"
-                elif len(tokens) == 2:
-                    # Унарная операция (например, sin 30)
-                    op = tokens[0]
-                    a = float(tokens[1])
-                    
-                    if op == "sin":
-                        result = self.calculator.sin(a)
-                    elif op == "cos":
-                        result = self.calculator.cos(a)
-                    elif op == "sqrt":
-                        result = self.calculator.sqrt(a)
-                    elif op == "floor":
-                        result = self.calculator.floor(a)
-                    elif op == "ceil":
-                        result = self.calculator.ceil(a)
-                    else:
-                        result = "Ошибка"
+        text = btn if btn else self.sender().text()
+        current_text = self.display.text()
+        
+        try:
+            if text == "C":
+                # Очистка поля ввода
+                self.calculator.clear()
+                self.display.setText("0")
+            
+            elif text == "+/-":
+                # Изменение знака числа
+                if current_text.startswith("-"):
+                    self.display.setText(current_text[1:])
                 else:
-                    result = "Ошибка"
+                    self.display.setText(f"-{current_text}")
+            
+            elif text in "+-*/^mod":
+                # Обработка бинарных операций
+                if " " not in current_text:  # Если оператор ещё не введён
+                    self.display.setText(f"{current_text} {text} ")
+            
+            elif text in ["sin", "cos", "sqrt", "floor", "ceil"]:
+                # Вычисление функции
+                value = float(current_text)
+                self.calculator.current_value = value
 
-                # Устанавливаем результат
+                if text == "sin":
+                    result = self.calculator.sin()
+                elif text == "cos":
+                    result = self.calculator.cos()
+                elif text == "sqrt":
+                    result = self.calculator.sqrt()
+                elif text == "floor":
+                    result = self.calculator.floor()
+                elif text == "ceil":
+                    result = self.calculator.ceil()
+                
                 self.display.setText(str(result))
-            except Exception as e:
-                self.display.setText("Ошибка")
-        elif sender.text() == "mc":
-            self.calculator.mc()
-        elif sender.text() == "mr":
-            self.display.setText(str(self.calculator.mr()))
-        elif sender.text() == "m+":
-            try:
-                value = float(self.display.text())
-                self.calculator.m_plus(value)
-            except ValueError:
-                self.display.setText("Ошибка")
-        elif sender.text() == "m-":
-            try:
-                value = float(self.display.text())
-                self.calculator.m_minus(value)
-            except ValueError:
-                self.display.setText("Ошибка")
-        elif sender.text() == "ms":
-            try:
-                value = float(self.display.text())
-                self.calculator.ms(value)
-            except ValueError:
-                self.display.setText("Ошибка")
-        elif sender.text() == "m:":
-            self.display.setText(str(self.calculator.mr()))
-        else:
-            current_text = self.display.text()
-            self.display.setText(current_text + " " + sender.text() + " ")
+            
+            elif text == "=":
+                # Вычисление результата
+                if " " in current_text:
+                    parts = current_text.split()
+                    if len(parts) == 3:
+                        left, op, right = parts
+                        left, right = float(left), float(right)
+                        self.calculator.current_value = left
+                        
+                        if op == "+":
+                            result = self.calculator.add(right)
+                        elif op == "-":
+                            result = self.calculator.subtract(right)
+                        elif op == "*":
+                            result = self.calculator.multiply(right)
+                        elif op == "/":
+                            result = self.calculator.divide(right)
+                        elif op == "mod":
+                            result = self.calculator.mod(right)
+                        elif op == "^":
+                            result = self.calculator.power(right)
+                        self.display.setText(str(result))
+            
+            elif text == "m:":
+                # Отображение памяти
+                memory_value = self.calculator.memory
+                QMessageBox.information(self, "Memory", f"Memory: {memory_value}")
+        except ValueError as e:
+            QMessageBox.critical(self, "Error", str(e))
+        except Exception as e:
+            QMessageBox.critical(self, "Error", "Invalid operation")
+
 
 
 
