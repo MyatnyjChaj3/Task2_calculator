@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QApplication, QGridLayout, QGroupBox, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QTabWidget,
                              QVBoxLayout, QWidget)
 
-from calc_functions.py import Calculator
+from calc_functions import Calculator
 
 
 class StandardCalculator(QWidget):
