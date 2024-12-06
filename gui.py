@@ -49,7 +49,7 @@ class StandardCalculator(QWidget):
             ('7', 0, 0), ('8', 0, 1), ('9', 0, 2),
             ('4', 1, 0), ('5', 1, 1), ('6', 1, 2),
             ('1', 2, 0), ('2', 2, 1), ('3', 2, 2),
-            ('+/-', 3, 0), ('0', 3, 1), ('.', 3, 2)
+            ('0', 3, 1), ('.', 3, 2)
         ]
         for text, row, col in num_buttons:
             btn = QPushButton(text)
@@ -57,6 +57,10 @@ class StandardCalculator(QWidget):
             btn.setStyleSheet("font-size: 16px;")
             buttons_layout.addWidget(btn, row, col)
 
+        btn_change = QPushButton("+/-")
+        btn_change.clicked.connect(self.on_function_click)
+        btn_change.setStyleSheet("font-size: 16px;")
+        buttons_layout.addWidget(btn_change, 3, 0)
         # Кнопка "C" и "="
         btn_C = QPushButton("C")
         btn_C.clicked.connect(self.on_function_click)
@@ -154,16 +158,27 @@ class StandardCalculator(QWidget):
                 self.display.setText("0")
             
             elif text == "+/-":
-                # Изменение знака числа
-                if current_text.startswith("-"):
-                    self.display.setText(current_text[1:])
+            # Change the sign of the first non-zero number
+                if current_text == "0":
+                    self.display.setText("-0")
+                    self.calculator.current_value = -0
+                elif " " in current_text:
+                    QMessageBox.warning(self, "Ошибка", "Невозможно изменить знак у сложного выражения")
                 else:
-                    self.display.setText(f"-{current_text}")
+                    try:
+                        value = float(current_text)
+                        self.calculator.current_value = value
+                        result = self.calculator.change_sign()
+                        self.display.setText(str(result))
+                    except ValueError:
+                        QMessageBox.warning(self, "Ошибка", "Некорректное число в поле ввода")
             
             elif text in "+-*/^mod":
-                # Обработка бинарных операций
-                if " " not in current_text:  # Если оператор ещё не введён
-                    self.display.setText(f"{current_text} {text} ")
+            # Добавление оператора в строку ввода
+                if " " in current_text:
+                    QMessageBox.warning(self, "Error", "Only one operation is allowed at a time")
+                else:
+                    self.display.setText(current_text + f" {text} ")
             
             elif text in ["sin", "cos", "sqrt", "floor", "ceil"]:
                 # Вычисление функции
@@ -201,9 +216,9 @@ class StandardCalculator(QWidget):
                         elif op == "/":
                             result = self.calculator.divide(right)
                         elif op == "mod":
-                            result = self.calculator.mod(right)
+                            result = self.calculator.remainder(right)
                         elif op == "^":
-                            result = self.calculator.power(right)
+                            result = self.calculator.pow(right)
                         self.display.setText(str(result))
             
             elif text == "m:":

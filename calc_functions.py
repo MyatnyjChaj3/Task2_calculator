@@ -59,37 +59,39 @@ class Calculator:
         return self.current_value
 
     def remainder(self, value):
-        try:
-            return Calculator.self % value 
-        except ZeroDivisionError:
-            print('На ноль делить нельзя!')
+        if value == 0:
+            raise ValueError("На ноль делить нельзя.")
+        return self.current_value % value
 
     def sin(self):
-        if Calculator.self <= 360 or Calculator.self >= 0:
-            Calculator.self = Calculator.self * math.pi() // 180
-            return math.sin(Calculator.self)
-        else:
-            print('Число должно находиться в диапазоне от 0 до 360')
-    
+        radians = math.radians(self.current_value)  # Перевод в радианы
+        self.current_value = math.sin(radians)
+        return self.current_value
+
     def cos(self):
-        if Calculator.self <= 360 or Calculator.self >= 0:
-            Calculator.self = Calculator.self * math.pi() // 180
-            return math.cos(Calculator.self)
-        else:
-            print('Число должно находиться в диапазоне от 0 до 360')
+        radians = math.radians(self.current_value)  # Перевод в радианы
+        self.current_value = math.cos(radians)
+        return self.current_value
    
     def pow(self, value):
-        return Calculator.self**value
+        self.current_value **= value
+        return self.current_value
     
     def sqrt(self):
-        if Calculator.self == 0:
-            return 1
-        elif Calculator.self > 0:
-            return Calculator.self**(1/2) 
-        else:
-            print('Число должно быть больше нуля!')
+        if self.current_value < 0:
+            raise ValueError("Число должно быть неотрицательным!")
+        self.current_value = math.sqrt(self.current_value)
+        return self.current_value
     
     def floor(self):
-        return math.floor(Calculator.self)
+        self.current_value = math.floor(self.current_value)
+        return self.current_value
+    
+
+
+
+    def change_sign(self):
+        self.current_value = -self.current_value
+        return self.current_value
 
 
