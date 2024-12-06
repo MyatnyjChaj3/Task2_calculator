@@ -1,7 +1,11 @@
+import sys
+
+from PyQt6.QtWidgets import QApplication
+
 from gui import CalculatorGUI
 
-# changes
-
 if __name__ == "__main__":
-    app = CalculatorGUI()
-    app.run()
+    app = QApplication(sys.argv)
+    gui = CalculatorGUI()
+    gui.run()
+    sys.exit(app.exec())
