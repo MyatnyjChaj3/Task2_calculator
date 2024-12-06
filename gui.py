@@ -1,10 +1,9 @@
 import sys
 
+from calc_functions.py import Calculator
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QGroupBox, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QTabWidget,
                              QVBoxLayout, QWidget)
-
-from super_calc import Calculator
 
 
 class StandardCalculator(QWidget):
