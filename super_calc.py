@@ -15,12 +15,25 @@ class Calculator:
         else:
             print('Число должно находиться в диапазоне от 0 до 360')
     
-    def cosinus(a,b):
+    def cosinus(a, b):
         if a <= 360 or a >= 0:
             a = a * math.pi() // 180
             return math.cos(a)
         else:
             print('Число должно находиться в диапазоне от 0 до 360')
-    def pow(a,b):
+   
+    def pow(a, b):
         return a**b
+    
+    def sqrt(a):
+        if a == 0:
+            return 1
+        elif a > 0:
+            return a**(1/2) 
+        else:
+            print('Число должно быть больше нуля!')
+    
+    def floor(a):
+        return math.floor(a)
+
 
