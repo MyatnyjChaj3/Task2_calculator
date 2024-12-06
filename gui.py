@@ -1,17 +1,15 @@
 import sys
-
 from PyQt6.QtWidgets import (QApplication, QGridLayout, QGroupBox, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QTabWidget,
                              QVBoxLayout, QWidget)
 
 from calc_functions import Calculator
-
+calc = Calculator()
 
 class StandardCalculator(QWidget):
-    """Калькулятор с интерфейсом, соответствующим дизайну"""
+    """Калькулятор с интерфейсом"""
     def __init__(self):
         super().__init__()
-        self.calculator = Calculator()  
         self.init_ui()
 
     def init_ui(self):
@@ -26,16 +24,12 @@ class StandardCalculator(QWidget):
 
         # Панель управления памятью
         memory_layout = QHBoxLayout()
-
-        # Кнопки памяти
         memory_buttons = ['mc', 'mr', 'm+', 'm-', 'ms', 'm:']
         for text in memory_buttons:
             btn = QPushButton(text)
             btn.clicked.connect(lambda checked, btn=text: self.on_function_click(btn))
             btn.setStyleSheet("font-size: 16px;")
             memory_layout.addWidget(btn)
-
-        # Добавляем панель памяти под строку ввода
         main_layout.addLayout(memory_layout)
 
         # Основной контейнер для числовых кнопок и групп справа
@@ -59,19 +53,18 @@ class StandardCalculator(QWidget):
 
         # Кнопка "C" и "="
         btn_C = QPushButton("C")
-        btn_C.clicked.connect(self.on_function_click)
+        btn_C.clicked.connect(lambda: self.on_function_click("C"))
         btn_C.setStyleSheet("font-size: 16px;")
         buttons_layout.addWidget(btn_C, 4, 0)
 
         btn_equal = QPushButton("=")
-        btn_equal.clicked.connect(self.on_function_click)
+        btn_equal.clicked.connect(lambda: self.on_function_click("="))
         btn_equal.setStyleSheet("font-size: 16px;")
         buttons_layout.addWidget(btn_equal, 4, 2)
 
-        # Добавляем сетку числовых кнопок в центральный макет
         central_layout.addLayout(buttons_layout)
 
-        # Боковая панель с QGroupBox
+        # Боковая панель
         side_layout = QVBoxLayout()
 
         # Операции
@@ -92,7 +85,7 @@ class StandardCalculator(QWidget):
         trig_buttons = ['sin', 'cos']
         for text in trig_buttons:
             btn = QPushButton(text)
-            btn.clicked.connect(lambda checked, btn=text: self.on_function_click(btn))
+            btn.clicked.connect(lambda checked, btn=text: self.on_unary_function_click(btn))
             btn.setStyleSheet("font-size: 16px;")
             trig_layout.addWidget(btn)
         trig_group.setLayout(trig_layout)
@@ -103,8 +96,12 @@ class StandardCalculator(QWidget):
         special_layout = QVBoxLayout()
         special_buttons = ['sqrt', '^', 'mod']
         for text in special_buttons:
-            btn = QPushButton(text)
-            btn.clicked.connect(lambda checked, btn=text: self.on_function_click(btn))
+            if text in ['sqrt', 'floor', 'ceil']:
+                btn = QPushButton(text)
+                btn.clicked.connect(lambda checked, btn=text: self.on_unary_function_click(btn))
+            else:
+                btn = QPushButton(text)
+                btn.clicked.connect(lambda checked, btn=text: self.on_function_click(btn))
             btn.setStyleSheet("font-size: 16px;")
             special_layout.addWidget(btn)
         special_group.setLayout(special_layout)
@@ -116,22 +113,18 @@ class StandardCalculator(QWidget):
         other_buttons = ['floor', 'ceil']
         for text in other_buttons:
             btn = QPushButton(text)
-            btn.clicked.connect(lambda checked, btn=text: self.on_function_click(btn))
+            btn.clicked.connect(lambda checked, btn=text: self.on_unary_function_click(btn))
             btn.setStyleSheet("font-size: 16px;")
             other_layout.addWidget(btn)
         other_group.setLayout(other_layout)
         other_group.setStyleSheet("border: 2px solid brown;")
 
-        # Добавляем все группы на боковую панель
         side_layout.addWidget(operations_group)
         side_layout.addWidget(trig_group)
         side_layout.addWidget(special_group)
         side_layout.addWidget(other_group)
 
-        # Добавляем боковую панель в центральный макет
         central_layout.addLayout(side_layout)
-
-        # Добавляем центральный макет в основной макет
         main_layout.addLayout(central_layout)
 
         self.setLayout(main_layout)
@@ -143,89 +136,101 @@ class StandardCalculator(QWidget):
         else:
             self.display.setText(current_text + btn)
 
-    def on_function_click(self, btn=None):
-        sender = self.sender()
-        if sender.text() == "C":
+    def on_unary_function_click(self, btn):
+        # Для унарных функций ожидаем формат: "sin 30", "cos 45", "sqrt 16", "floor 4.7", "ceil 4.2"
+        current_text = self.display.text().strip()
+        # Если текст "0", то заменим его на пустой для удобства
+        if current_text == "0":
+            current_text = ""
+        # Формируем строку: "<op> <value>"
+        # Если сейчас есть число, то ставим операцию впереди.
+        self.display.setText(btn + " " + current_text)
+
+    def on_function_click(self, btn):
+        # Обработка кнопок функций, операций и результата
+        if btn == "C":
             self.display.setText("0")
-        elif sender.text() == "=":
+        elif btn == "=":
             try:
-                # Получаем выражение из дисплея
-                expression = self.display.text()
-                tokens = expression.split()  # Разделяем текст на элементы
-                
+                expression = self.display.text().strip()
+                tokens = expression.split()
+
+                # Проверка формата
                 if len(tokens) == 3:
-                    # Бинарная операция (например, 5 + 3)
-                    a = float(tokens[0])
-                    op = tokens[1]
-                    b = float(tokens[2])
-                    
-                    # Выполняем операцию
+                    # Формат: a op b
+                    a, op, b = tokens
+                    a = float(a)
+                    b = float(b)
+
                     if op == "+":
-                        result = self.calculator.add(a, b)
+                        result = calc.add(a, b)
                     elif op == "-":
-                        result = self.calculator.subtract(a, b)
+                        result = calc.subtract(a, b)
                     elif op == "*":
-                        result = self.calculator.multiply(a, b)
+                        result = calc.multiply(a, b)
                     elif op == "/":
-                        result = self.calculator.divide(a, b)
+                        result = calc.divide(a, b)
                     elif op == "mod":
-                        result = self.calculator.modulus(a, b)
+                        result = calc.remainder(a, b)
                     elif op == "^":
-                        result = self.calculator.power(a, b)
+                        result = calc.pow(a, b)
                     else:
                         result = "Ошибка"
+
                 elif len(tokens) == 2:
-                    # Унарная операция (например, sin 30)
-                    op = tokens[0]
-                    a = float(tokens[1])
-                    
+                    # Формат: op a (унарная операция, например: "sin 30")
+                    op, val = tokens
+                    a = float(val)
+
                     if op == "sin":
-                        result = self.calculator.sin(a)
+                        result = calc.sin(a)
                     elif op == "cos":
-                        result = self.calculator.cos(a)
+                        result = calc.cos(a)
                     elif op == "sqrt":
-                        result = self.calculator.sqrt(a)
+                        result = calc.sqrt(a)
                     elif op == "floor":
-                        result = self.calculator.floor(a)
+                        result = calc.floor(a)
                     elif op == "ceil":
-                        result = self.calculator.ceil(a)
+                        result = calc.ceil(a)
                     else:
                         result = "Ошибка"
                 else:
                     result = "Ошибка"
 
-                # Устанавливаем результат
                 self.display.setText(str(result))
-            except Exception as e:
+            except Exception:
                 self.display.setText("Ошибка")
-        elif sender.text() == "mc":
-            self.calculator.mc()
-        elif sender.text() == "mr":
-            self.display.setText(str(self.calculator.mr()))
-        elif sender.text() == "m+":
-            try:
-                value = float(self.display.text())
-                self.calculator.m_plus(value)
-            except ValueError:
-                self.display.setText("Ошибка")
-        elif sender.text() == "m-":
-            try:
-                value = float(self.display.text())
-                self.calculator.m_minus(value)
-            except ValueError:
-                self.display.setText("Ошибка")
-        elif sender.text() == "ms":
-            try:
-                value = float(self.display.text())
-                self.calculator.ms(value)
-            except ValueError:
-                self.display.setText("Ошибка")
-        elif sender.text() == "m:":
-            self.display.setText(str(self.calculator.mr()))
-        else:
-            current_text = self.display.text()
-            self.display.setText(current_text + " " + sender.text() + " ")
 
+        elif btn == "mc":
+            calc.memory_clear()
+        elif btn == "mr":
+            self.display.setText(str(calc.memory_recall()))
+        elif btn == "m+":
+            try:
+                value = float(self.display.text())
+                calc.memory_add(value)
+            except ValueError:
+                self.display.setText("Ошибка")
+        elif btn == "m-":
+            try:
+                value = float(self.display.text())
+                calc.memory_subtract(value)
+            except ValueError:
+                self.display.setText("Ошибка")
+        elif btn == "ms":
+            try:
+                value = float(self.display.text())
+                calc.memory_set(value)
+            except ValueError:
+                self.display.setText("Ошибка")
+        elif btn == "m:":
+            self.display.setText(str(calc.memory_recall()))
+        else:
+            # Операции вроде +, -, *, /, mod, ^
+            current_text = self.display.text().strip()
+            if current_text == "0":
+                current_text = "0"
+            self.display.setText(current_text + " " + btn + " ")
 
 
 class CalculatorGUI(QWidget):
@@ -239,11 +244,8 @@ class CalculatorGUI(QWidget):
         self.setGeometry(200, 200, 500, 500)
 
         layout = QVBoxLayout()
-
-        # Вкладки
         tabs = QTabWidget()
         tabs.addTab(StandardCalculator(), "Калькулятор")
-
         layout.addWidget(tabs)
         self.setLayout(layout)
 
