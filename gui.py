@@ -225,11 +225,43 @@ class StandardCalculator(QWidget):
                 # Отображение памяти
                 memory_value = self.calculator.memory
                 QMessageBox.information(self, "Memory", f"Memory: {memory_value}")
+            elif text == "mc":  # Очистка памяти
+                self.calculator.memory_clear()
+                QMessageBox.information(self, "Memory", "Memory cleared")
+
+            elif text == "mr":  # Чтение памяти
+                self.calculator.memory_recall()
+                self.display.setText(str(self.calculator.current_value))
+
+            elif text == "m+":  # Добавление к памяти
+                try:
+                    value = float(self.display.text())
+                    self.calculator.memory_add(value)
+                    QMessageBox.information(self, "Memory", f"Added to memory: {value}")
+                except ValueError:
+                    QMessageBox.warning(self, "Ошибка", "Некорректное значение для добавления в память")
+
+            elif text == "m-":  # Вычитание из памяти
+                try:
+                    value = float(self.display.text())
+                    self.calculator.memory_subtract(value)
+                    QMessageBox.information(self, "Memory", f"Subtracted from memory: {value}")
+                except ValueError:
+                    QMessageBox.warning(self, "Ошибка", "Некорректное значение для вычитания из памяти")
+
+            elif text == "ms":  # Сохранение в память
+                try:
+                    value = float(self.display.text())
+                    self.calculator.memory = value
+                    QMessageBox.information(self, "Memory", f"Saved to memory: {value}")
+                except ValueError:
+                    QMessageBox.warning(self, "Ошибка", "Некорректное значение для сохранения в память")
         except ValueError as e:
             QMessageBox.critical(self, "Error", str(e))
         except Exception as e:
             QMessageBox.critical(self, "Error", "Invalid operation")
-
+            
+            
 
 
 
