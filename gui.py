@@ -1,5 +1,5 @@
 from graphics import *
-from super_calc import Calculator
+from calc_functions import Calculator
 
 
 class CalculatorGUI:
